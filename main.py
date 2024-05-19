@@ -14,8 +14,14 @@ logging.basicConfig(
 
 def print_dict(dict):
     logging.debug('PRINTING THE DICTIONARY IN print_dict function')
-    for key, value in dict.items():
-        print(f"Key is: {key} with value: {value}")
+    try:
+        if not dict:
+            raise ValueError(" DICT cannot be printed, it's empty row.")
+        for key, value in dict.items():
+            print(f"Key is: {key} with value: {value}")
+    except ValueError as e:
+        print(f'An error occured in PRINT_DICT function: {e}')
+
 
 
 def get_column_names_to_list(df) -> list:
@@ -39,7 +45,7 @@ def get_number_of_rows(df):
 def get_column_content(df_row):
     logging.info('get_column_content function started')
     for column, value in df_row.items():
-        if column == 'Details':
+        if column == 'Feature/CNI Planned':
             # print(f'Column: {column} value: {value}')
             entry = value
             return entry
