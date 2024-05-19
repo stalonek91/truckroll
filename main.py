@@ -12,6 +12,12 @@ logging.basicConfig(
     ]
 )
 
+def print_dict(dict):
+    logging.debug('PRINTING THE DICTIONARY IN print_dict function')
+    for key, value in dict.items():
+        print(f"Key is: {key} with value: {value}")
+
+
 def get_column_names_to_list(df) -> list:
     logging.info('get_column_names_to_list function started')
     output_list = []
@@ -33,7 +39,7 @@ def get_number_of_rows(df):
 def get_column_content(df_row):
     logging.info('get_column_content function started')
     for column, value in df_row.items():
-        if column == 'Nokia Ticket':
+        if column == 'Details':
             # print(f'Column: {column} value: {value}')
             entry = value
             return entry
@@ -49,43 +55,58 @@ def remove_non_alpha(user_string):
 def dict_creation_from_value(value_from_column):
     logging.info('dict_creation_from_value function started')
     split_values_to_dict = {}
-    lines = value_from_column.split('\n')
 
-    for line in lines:
-        parts = line.split(':', 1)
+    try:
+        if value_from_column is None:
+            raise ValueError ("Row is empty!")
+        
+        lines = value_from_column.split('\n')
 
-        if len(parts) == 2:
-            key = parts[0].split()
-            value = parts[1]
-            key = str(key[1:]) #Removing special 1st character
+        for line in lines:
+            parts = line.split(':', 1)
 
-            key = remove_non_alpha(key)
+            if len(parts) == 2:
+                key = parts[0].split()
+                value = parts[1]
+                key = str(key[1:]) #Removing special 1st character
+
+                key = remove_non_alpha(key)
 
 
 
-            if key == 'Salesforce':
-                try:
-                    value = int(value)
-                except ValueError:
-                    pass
+                if key == 'Salesforce':
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        pass
 
-            split_values_to_dict[key] = value
+                split_values_to_dict[key] = value
 
-    return split_values_to_dict
+        return split_values_to_dict
+    
+    except ValueError as e:
+        print(f'Error: {e}')
         
 
 df = pd.read_excel('truckroll.xlsx')
 first_row_df = df.loc[0]
 value = get_column_content(first_row_df)
+print(f' type of value is: {type(value)}')
+
 
 
 first_row_df_dict = dict_creation_from_value(value)
-for key, value in first_row_df_dict.items():
-    print(f"Key is: {key} with value: {value}")
+print_dict(first_row_df_dict)
 
 
 
 list_col_names = get_column_names_to_list(df)
 
-# for element in list_col_names:
-#     print(f' Element: {element}')
+for element in list_col_names:
+    print(f' Element: {element}')
+
+
+#TODO: i want to write a function that will take 1st row as an argument, iterate over all columns, and try to use 
+# get_column_content on each entry. 
+# current flow: first_row_df = df.loc[0]-> pandas_series, value = get_column_content(first_row_df) ->string, first_row_df_dict = dict_creation_from_value(value) ->dict
+#
