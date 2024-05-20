@@ -1,6 +1,7 @@
 import pandas as pd
 import re
 import logging
+import json
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -117,30 +118,35 @@ df = pd.read_excel('truckroll.xlsx')
 first_row_df = df.loc[0]
 list_of_values_dict = get_columns_content(first_row_df)
 
-# Iterate over the list and print each dictionary
-for i, item in enumerate(list_of_values_dict):
-    print(f"Dictionary {i + 1}:")
-    if isinstance(item, dict):
-        for key, value in item.items():
-            print(f"  Key: {key}, Value: {value}")
-    else:
-        print(f"  Value: {item}")
 
-# value = get_columns_content(first_row_df)
+# for i, item in enumerate(list_of_values_dict):
+#     print(f"Dictionary {i + 1}:")
+#     if isinstance(item, dict):
+#         for key, value in item.items():
+#             print(f"  Key: {key}, Value: {value}")
+#     else:
+#         print(f"  Value: {item}")
 
-# print(f' type of value is: {type(value)}')
+def create_json_file(final_dict, file_path = 'truckroll.json'):
+    with open(file_path, 'w') as json_file:
+        json.dump(final_dict, json_file, indent=4)
+
+column_names = df.columns
 
 
+formatted_colums = []
+final_output_dict = {}
 
-# first_row_df_dict = dict_creation_from_value(value)
-# print_dict(first_row_df_dict)
-# list_col_names = get_column_names_to_list(df)
+for column in column_names:
+    f_column = remove_non_alpha(column)
+    formatted_colums.append(f_column)
 
-# print_list(list_col_names)
-# print_dict(first_row_df)
+i = 0
+for column_name in formatted_colums:
+    
+    final_output_dict[formatted_colums[i]] = list_of_values_dict[i]
+    i += 1
 
-#TODO: i want to write a function that will take 1st row as an argument, iterate over all columns, and try to use 
-# get_column_content on each entry. 
-# current flow: first_row_df = df.loc[0]-> pandas_series, value = get_column_content(first_row_df) ->string, first_row_df_dict = dict_creation_from_value(value) ->dict
-#
+create_json_file(final_output_dict)
 
+#TODO: remove nan values
