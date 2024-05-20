@@ -14,7 +14,7 @@ logging.basicConfig(
 
 def print_list(list):
 
-    for element in list_col_names:
+    for element in list:
         print(f' Element: {element}')
 
 
@@ -59,7 +59,7 @@ def get_columns_content(df_row) -> list:
     logging.info('get_column_content function started')
     for column, value in df_row.items():
         logging.info('Calling dict_creating function withing GET_COLUMNS_CONTENT func')
-        list_of_dicts.append(dict_creation_from_value(value))
+        list_of_dicts.append(dict_creation_from_value(value, column))
 
     return list_of_dicts
 
@@ -70,7 +70,7 @@ def remove_non_alpha(user_string):
     clean_string = re.sub('[^0-9a-zA-Z]+', '', user_string)
     return clean_string
 
-def dict_creation_from_value(value_from_column):
+def dict_creation_from_value(value_from_column, user_key):
     logging.info('dict_creation_from_value function started')
     logging.debug(f'This is content that is being processed: {value_from_column}')
     split_values_to_dict = {}
@@ -104,6 +104,8 @@ def dict_creation_from_value(value_from_column):
                         pass
 
                 split_values_to_dict[key] = value
+            else:
+                split_values_to_dict[user_key] = line.strip()
 
         return split_values_to_dict
     
