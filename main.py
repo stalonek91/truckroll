@@ -118,7 +118,7 @@ df = pd.read_excel('truckroll.xlsx')
 first_row_df = df.loc[0]
 list_of_values_dict = get_columns_content(first_row_df)
 print_list(list_of_values_dict)
-
+print_dict(list_of_values_dict[1])
 
 # for i, item in enumerate(list_of_values_dict):
 #     print(f"Dictionary {i + 1}:")
