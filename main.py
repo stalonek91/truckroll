@@ -16,7 +16,7 @@ logging.basicConfig(
 def print_list(list):
 
     for element in list:
-        print(f' Element: {element}')
+        print(f'Element: {element}')
 
 
 def print_dict(data):
@@ -117,6 +117,7 @@ def dict_creation_from_value(value_from_column, user_key):
 df = pd.read_excel('truckroll.xlsx')
 first_row_df = df.loc[0]
 list_of_values_dict = get_columns_content(first_row_df)
+print_list(list_of_values_dict)
 
 
 # for i, item in enumerate(list_of_values_dict):
