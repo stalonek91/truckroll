@@ -3,9 +3,10 @@ import re
 import logging
 import json
 
+# Set up logging configuration
 logging.basicConfig(
     level=logging.DEBUG,
-    format='\n%(levelname)s: %(message)s\n',
+    format='%(levelname)s: %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S',
     handlers=[
         logging.FileHandler('app.log'),
@@ -13,90 +14,60 @@ logging.basicConfig(
     ]
 )
 
-def print_list(list):
-
-    for element in list:
+def print_list(elements):
+    logging.info('Entering print_list function')
+    for element in elements:
         print(f'Element: {element}')
 
-
 def print_dict(data):
-    logging.debug('PRINTING THE DICTIONARY IN print_dict function')
+    logging.info('Entering print_dict function')
     try:
         if isinstance(data, pd.Series):
             if data.empty:
-                raise ValueError("Dict cannot be printed, it's and empty Series")
+                raise ValueError("Dict cannot be printed, it's an empty Series")
         elif isinstance(data, dict):
             if not data:
-                raise ValueError(" DICT cannot be printed, it's empty row.")
+                raise ValueError("Dict cannot be printed, it's an empty dictionary.")
         for key, value in data.items():
             print(f"Key is: {key} with value: {value}")
     except ValueError as e:
-        print(f'An error occured in PRINT_DICT function: {e}')
-
-
-
+        logging.error(f'An error occurred in print_dict function: {e}')
 
 def get_column_names_to_list(df) -> list:
-    logging.info('get_column_names_to_list function started')
-    output_list = []
-
-    column_names = list(df.columns)
-    for element in column_names:
-        no_new_line_element = element.replace('\n', ' ')
-        output_list.append(no_new_line_element)
-
-    return output_list
-
+    logging.info('Entering get_column_names_to_list function')
+    return [element.replace('\n', ' ') for element in df.columns]
 
 def get_number_of_rows(df):
     number_of_rows = len(df)
-    print(f'Number of rows is: {number_of_rows}')
+    logging.info(f'Number of rows: {number_of_rows}')
     return number_of_rows
-    
-#TODO: column needs to be specified by user
+
 def get_columns_content(df_row) -> list:
-    list_of_dicts = []
-
-    logging.info('get_column_content function started')
-    for column, value in df_row.items():
-        logging.info('Calling dict_creating function withing GET_COLUMNS_CONTENT func')
-        list_of_dicts.append(dict_creation_from_value(value, column))
-
-    return list_of_dicts
-
-
+    logging.info('Entering get_columns_content function')
+    return [dict_creation_from_value(value, column) for column, value in df_row.items()]
 
 def remove_non_alpha(user_string):
-    # logging.info('remove_non_alpha function started')
-    clean_string = re.sub('[^0-9a-zA-Z]+', '', user_string)
-    return clean_string
+    return re.sub('[^0-9a-zA-Z]+', '', user_string)
 
 def dict_creation_from_value(value_from_column, user_key):
-    logging.info('dict_creation_from_value function started')
-    logging.debug(f'This is content that is being processed: {value_from_column}')
+    logging.info('Entering dict_creation_from_value function')
     split_values_to_dict = {}
 
     try:
         if value_from_column is None:
-            raise ValueError ("Row is empty!")
+            raise ValueError("Row is empty!")
         
         if not isinstance(value_from_column, str):
             logging.warning(f'Skipping non-string value: {value_from_column}')
-            return value_from_column
+            return {user_key: value_from_column}
         
         lines = value_from_column.split('\n')
-
         for line in lines:
             parts = line.split(':', 1)
-
             if len(parts) == 2:
-                key = parts[0].split()
-                value = parts[1]
-                key = str(key[1:]) #Removing special 1st character
-
+                value = parts[1].strip()  # Ensure value is stripped of whitespace
+                key = str(parts[0].split()[1])  # Remove first special character
                 key = remove_non_alpha(key)
-
-
 
                 if key == 'Salesforce':
                     try:
@@ -111,43 +82,32 @@ def dict_creation_from_value(value_from_column, user_key):
         return split_values_to_dict
     
     except ValueError as e:
-        print(f'Error: {e}')
-        
+        logging.error(f'Error: {e}')
+        return {user_key: value_from_column}
 
+def create_json_file(final_dict, file_path='truckroll.json'):
+    logging.info('Creating json file in create_json_file function')
+    with open(file_path, 'w') as json_file:
+        json.dump(final_dict, json_file, indent=4)
+
+def create_final_dict_for_json(column_names, list_of_values_dict) -> dict:
+    logging.info('Entering create_final_dict_for_json function')
+    formatted_columns = [remove_non_alpha(column) for column in column_names]
+    final_output_dict = {formatted_columns[i]: list_of_values_dict[i] for i in range(len(formatted_columns))}
+
+    if final_output_dict:
+        logging.debug('Final dict successfully created in create_final_dict_for_json function')
+    else:
+        logging.error('Final dict is empty! Something went wrong in create_final_dict_for_json function')
+    
+    return final_output_dict
+
+# Main execution
 df = pd.read_excel('truckroll.xlsx')
 first_row_df = df.loc[0]
 list_of_values_dict = get_columns_content(first_row_df)
 print_list(list_of_values_dict)
-print_dict(list_of_values_dict[1])
-
-# for i, item in enumerate(list_of_values_dict):
-#     print(f"Dictionary {i + 1}:")
-#     if isinstance(item, dict):
-#         for key, value in item.items():
-#             print(f"  Key: {key}, Value: {value}")
-#     else:
-#         print(f"  Value: {item}")
-
-def create_json_file(final_dict, file_path = 'truckroll.json'):
-    with open(file_path, 'w') as json_file:
-        json.dump(final_dict, json_file, indent=4)
-
 column_names = df.columns
 
-
-formatted_colums = []
-final_output_dict = {}
-
-for column in column_names:
-    f_column = remove_non_alpha(column)
-    formatted_colums.append(f_column)
-
-i = 0
-for column_name in formatted_colums:
-    
-    final_output_dict[formatted_colums[i]] = list_of_values_dict[i]
-    i += 1
-
-create_json_file(final_output_dict)
-
-#TODO: remove nan values
+# Create the final dictionary and write to JSON file
+create_json_file(create_final_dict_for_json(column_names, list_of_values_dict))
